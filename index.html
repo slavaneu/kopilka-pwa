@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Копилка</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4CAF50">
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      font-size: 16px; 
+      padding: 10px;
+      background: #fafafa;
+    }
+    h2 { font-size: 18px; margin-bottom: 5px; }
+    p { margin: 8px 0; }
+    .table-container {
+      overflow-x: auto;
+    }
+    table { 
+      border-collapse: collapse; 
+      margin-top: 12px; 
+      width: 100%;
+    }
+    th, td { 
+      border: 1px solid #999; 
+      padding: 4px 6px; 
+      text-align: center; 
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th { 
+      background: #f0f0f0; 
+      position: sticky; 
+      top: 0; 
+      z-index: 1;
+    }
+    caption { margin-bottom: 6px; font-weight: bold; font-size: 15px; }
+    .highlight { background: #d1ffd1; font-weight: bold; }
+  </style>
+</head>
+<body>
+<script>
+function piggyBank(targetDate) {
+    const startDate = new Date(2025, 8, 1); // 1 сентября 2025
+    const diffTime = targetDate - startDate;
+    const dayNumber = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+    if (dayNumber < 1) {
+        throw new Error("Дата раньше 01.09.2025");
+    }
+
+    const dailyAmount = dayNumber;
+    const totalAmount = (dayNumber * (dayNumber + 1)) / 2;
+    return { dailyAmount, totalAmount, dayNumber };
+}
+
+(function() {
+    const targetDate = new Date(); // сегодняшняя дата
+    try {
+        const result = piggyBank(targetDate);
+
+        document.write(`<h2>Копилка на ${targetDate.toLocaleDateString("ru-RU")}</h2>`);
+        document.write(`<p><b>День №${result.dayNumber}</b><br>
+            Сегодня нужно положить: <b>${result.dailyAmount} грн</b><br>
+            Общая сумма в копилке: <b>${result.totalAmount} грн</b></p>`);
+
+        document.write('<div class="table-container"><table>');
+        document.write("<caption>Накопления с 01.09.2025</caption>");
+        document.write("<tr><th>Дата</th><th>День №</th><th>Сумма за день</th><th>Итого</th></tr>");
+
+        const startDate = new Date(2025, 8, 1);
+        for (let i = 0; i < result.dayNumber; i++) {
+            const d = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+            const daily = i + 1;
+            const total = (daily * (daily + 1)) / 2;
+            const highlight = (daily === result.dayNumber) ? ' class="highlight"' : '';
+            document.write(
+                `<tr${highlight}><td>${d.toLocaleDateString("ru-RU")}</td>` +
+                `<td>${daily}</td><td>${daily} грн</td><td>${total} грн</td></tr>`
+            );
+        }
+
+        document.write("</table></div>");
+    } catch (e) {
+        document.write("<p style='color:red'>Ошибка: " + e.message + "</p>");
+    }
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+    .then(() => console.log("Service Worker зарегистрирован"))
+    .catch(err => console.log("Ошибка SW:", err));
+}
+</script>
+</body>
+</html>
