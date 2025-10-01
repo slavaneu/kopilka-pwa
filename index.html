@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4CAF50">
   <meta charset="UTF-8">
   <title>Копилка</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4CAF50">
   <style>
     body { 
       font-family: Arial, sans-serif; 
@@ -71,15 +71,34 @@ function piggyBank(targetDate) {
         document.write("<tr><th>Дата</th><th>День №</th><th>Сумма за день</th><th>Итого</th></tr>");
 
         const startDate = new Date(2025, 8, 1);
-        for (let i = 0; i < result.dayNumber; i++) {
-            const d = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
-            const daily = i + 1;
-            const total = (daily * (daily + 1)) / 2;
-            const highlight = (daily === result.dayNumber) ? ' class="highlight"' : '';
-            document.write(
-                `<tr${highlight}><td>${d.toLocaleDateString("ru-RU")}</td>` +
-                `<td>${daily}</td><td>${daily} грн</td><td>${total} грн</td></tr>`
-            );
+        let currentDate = new Date(startDate);
+        let dayCounter = 1;
+
+        while (currentDate <= targetDate) {
+            const nextDay = new Date(currentDate);
+            nextDay.setDate(currentDate.getDate() + 1);
+
+            const isMonthEnd = (nextDay.getMonth() !== currentDate.getMonth());
+
+            // показываем день:
+            // 1) все дни сентября до конца месяца
+            // 2) последний день каждого полного месяца
+            // 3) все дни месяца, где сейчас targetDate
+            if (
+                (currentDate.getMonth() === 8 && targetDate.getMonth() === 8) || // сентябрь (все дни до 30.09)
+                (isMonthEnd && currentDate < targetDate) ||                     // конец месяца, если ещё не дошли до today
+                (currentDate.getMonth() === targetDate.getMonth())              // все дни текущего месяца
+            ) {
+                const total = (dayCounter * (dayCounter + 1)) / 2;
+                const highlight = (currentDate.toDateString() === targetDate.toDateString()) ? ' class="highlight"' : '';
+                document.write(
+                    `<tr${highlight}><td>${currentDate.toLocaleDateString("ru-RU")}</td>` +
+                    `<td>${dayCounter}</td><td>${dayCounter} грн</td><td>${total} грн</td></tr>`
+                );
+            }
+
+            currentDate = nextDay;
+            dayCounter++;
         }
 
         document.write("</table></div>");
@@ -88,7 +107,6 @@ function piggyBank(targetDate) {
     }
 })();
 </script>
-
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js")
